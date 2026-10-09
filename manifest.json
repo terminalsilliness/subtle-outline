@@ -1,0 +1,26 @@
+{
+  "name": "Subtle Outline",
+  "description": "A subtle dark outlined theme with customisable colours",
+  "preview": "images/preview.png",
+  "readme": "README.md",
+  "usercss": "user.css",
+  "schemes": "color.ini",
+  "include": [
+    "https://raw.githubusercontent.com/terminalsilliness/subtle-outline/main/subtle-outline.js"
+  ],
+  "authors": [
+    {
+      "name": "terminalsilliness",
+      "url": "https://github.com/terminalsilliness"
+    },
+    {
+      "name": "Droidiar (Simple Outline)",
+      "url": "https://github.com/Droidiar"
+    }
+  ],
+  "tags": [
+    "dark",
+    "minimal",
+    "outline"
+  ]
+}
