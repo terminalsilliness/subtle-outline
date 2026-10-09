@@ -11,7 +11,8 @@ Just a subtle dark theme that used Simple Outline as a base. It was changed to b
 - **Settings panel** (paintbrush icon, top right), with every change applied instantly:
   - **Window buttons**: Mac / Windows
   - **Corners**: Rounded / Sharp (sharp squares off *everything*, buttons and tags included)
-  - **Colours**: background, box background and outline
+  - **Colour scheme**: switch between the schemes below without leaving Spotify
+  - **Colours**: accent (play buttons and highlighted items), background, box background and outline
   - **Outline thickness**: 0–4px
   - **Switches**: boxed top bar, boxed search dropdown, compact search dropdown, plain search bar (no fill or glow), hide the ⌘L hint, flat top bar buttons (no hover circles; icons glow instead), dim Home icon, charcoal Liked Songs
   - **Reset to defaults**
