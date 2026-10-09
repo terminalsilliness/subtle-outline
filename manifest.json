@@ -1,17 +1,22 @@
-	
-name	"Subtle Outline [MAC]"
-description	"A subtle dark outlined theme with customisable colours"
-preview	"images/preview.png"
-readme	"README.md"
-usercss	"user.css"
-schemes	"color.ini"
-include	
-0	"https://raw.githubusercontent.com/terminalsilliness/subtle-outline/main/subtle-outline.js"
-authors	
-0	
-name	"terminalsilliness"
-url	"https://github.com/terminalsilliness"
-tags	
-0	"dark"
-1	"minimal"
-2	"outline"
+{
+  "name": "Subtle Outline [MAC]",
+  "description": "A subtle dark outlined theme with customisable colours",
+  "preview": "images/preview.png",
+  "readme": "README.md",
+  "usercss": "user.css",
+  "schemes": "color.ini",
+  "include": [
+    "https://raw.githubusercontent.com/terminalsilliness/subtle-outline/main/subtle-outline.js"
+  ],
+  "authors": [
+    {
+      "name": "terminalsilliness",
+      "url": "https://github.com/terminalsilliness"
+    }
+  ],
+  "tags": [
+    "dark",
+    "minimal",
+    "outline"
+  ]
+}
