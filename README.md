@@ -16,7 +16,7 @@ Just a subtle dark theme that used Simple Outline as a base. It was changed to b
   - **Outline thickness**: 0–4px
   - **Switches**: boxed top bar, boxed search dropdown, compact search dropdown, plain search bar (no fill or glow), hide the ⌘L hint, flat top bar buttons (no hover circles; icons glow instead), dim Home icon, charcoal Liked Songs
   - **Reset to defaults**
-- **Colour schemes**: Subtle (default), plus Simple Outline's Original, Natural, Droid and Catppuccin Frappé schemes.
+- **Colour schemes** (all dark): Subtle (default), Midnight, Forest, Ember, Amethyst and Mono, plus Simple Outline's Natural and Droid.
 
 ## Install
 
@@ -41,6 +41,5 @@ Install **Subtle Outline** from the Themes tab in [Spicetify Marketplace](https:
 
 ## Credits
 
-- **Simple Outline** by [Droidiar](https://github.com/Droidiar): the original outlined theme this is forked from (`user.css` and the Original, Natural, Droid and Catppuccin colour schemes).
-- Catppuccin Frappé colours via [Dribbblish](https://github.com/spicetify/spicetify-themes/tree/master/Dribbblish).
+- **Simple Outline** by [Droidiar](https://github.com/Droidiar): the original outlined theme this is forked from (`user.css` and the Natural and Droid colour schemes).
 - Subtle Outline changes and `subtle-outline.js` by [terminalsilliness](https://github.com/terminalsilliness).
