@@ -1,6 +1,6 @@
-# Subtle Outline
+# Subtle Outline [MAC]
 
-Just a subtle dark theme that used Simple Outline as a base. It was changed to better fit macOS and to tidy up the top bar.
+Just a subtle dark theme that used Simple Outline as a base. It was changed to better fit macOS and to tidy up the top bar. Only for macOS.
 
 ![Subtle Outline preview](images/preview.png)
 
