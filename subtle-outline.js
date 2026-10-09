@@ -10,7 +10,7 @@
 //    buttons stay where React puts them in the page (moving them would upset
 //    Spotify's React code); CSS anchor positioning draws them inside space
 //    reserved in their new box.
-//  - Room for the window buttons: on the left (Mac) or top right (Windows).
+//  - Room for the macOS window buttons (red/yellow/green) in the left box.
 //
 // Everything else is a setting, applied live by toggling classes and CSS
 // variables on <html>, and saved in Spotify's local storage.
@@ -77,7 +77,6 @@
   ];
 
   const DEFAULTS = {
-    os: /Windows/.test(navigator.userAgent) ? "windows" : "mac",
     corners: "rounded",
     outlineWidth: 1,
     ...Object.fromEntries(TOGGLES.map(([key]) => [key, true])),
@@ -100,8 +99,6 @@
 
   function applySettings() {
     const root = document.documentElement;
-    root.classList.toggle("sbo-mac", settings.os === "mac");
-    root.classList.toggle("sbo-windows", settings.os === "windows");
     root.classList.toggle("sbo-sharp", settings.corners === "sharp");
     for (const [key] of TOGGLES) root.classList.toggle("sbo-" + key, !!settings[key]);
     root.style.setProperty("--sbo-outline-width", settings.outlineWidth + "px");
@@ -149,15 +146,11 @@
       margin-inline-start: 0 !important;
       height: 48px;
       box-sizing: border-box;
-      /* 68px on the right = 8px gap + 48px Home + 12px edge */
-      padding-inline: 12px 68px !important;
-    }
-    /* Mac: start at the window edge with the red/yellow/green buttons inside
-       the box; 92px keeps the arrows clear of them */
-    html.sbo-mac .main-globalNav-historyButtonsWrapper {
-      /* divided by the zoom factor: the window buttons don't zoom with the
-         page, so the room for them must stay the same size on screen */
-      padding-inline-start: calc(92px / var(--sbo-zoom, 1)) !important;
+      /* starts at the window edge with the red/yellow/green buttons inside
+         the box: 92px on the left keeps the arrows clear of them (divided by
+         the zoom factor, since the window buttons don't zoom with the page);
+         68px on the right = 8px gap + 48px Home + 12px edge */
+      padding-inline: calc(92px / var(--sbo-zoom, 1)) 68px !important;
     }
     .main-globalNav-searchContainer > button {
       position: fixed !important;
@@ -221,14 +214,6 @@
       /* 120px on the left = 8px edge + three 32px buttons with 8px between
          (the right box adds its own 8px gap before What's New) */
       padding-inline: 120px 8px;
-    }
-    /* Windows: leave room for the minimize/maximize/close buttons in the
-       top right corner (Windows draws them 46px wide each) */
-    html.sbo-windows .main-globalNav-contentRight {
-      margin-inline-end: calc(138px / var(--sbo-zoom, 1));
-    }
-    html.sbo-windows .main-globalNav-contentRightSpacer {
-      display: none !important;
     }
     /* Browse lives inside the search bar's icon area, whose transform would
        otherwise trap the fixed positioning below. */
@@ -618,7 +603,7 @@
   function buildPanel() {
     const panel = el("div", { className: "sbo-panel" });
 
-    // Two-way switches (Mac/Windows, Rounded/Sharp)
+    // Two-way switch (Rounded/Sharp)
     function segmented(key, options) {
       const segment = el("div", { className: "sbo-segment" });
       for (const [value, text] of options) {
@@ -634,9 +619,6 @@
     }
     panel.append(el("div", { className: "sbo-section" },
       el("h3", { textContent: "Layout" }),
-      el("div", { className: "sbo-row" },
-        labelBlock("Window buttons", "Leave room for the close/minimize buttons: left on Mac, top right on Windows"),
-        segmented("os", [["mac", "Mac"], ["windows", "Windows"]])),
       el("div", { className: "sbo-row" },
         labelBlock("Corners", "Rounded, or sharp: every corner square, including buttons and tags"),
         segmented("corners", [["rounded", "Rounded"], ["sharp", "Sharp"]]))));
