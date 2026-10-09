@@ -7,9 +7,8 @@ Just a subtle dark theme that used Simple Outline as a base. It was changed to b
 ## Features
 
 - **Boxed top bar**: back, forward and Home in one box; a full-width search bar in the middle; settings, Browse, Marketplace, What's New, Listening activity and your profile on the right.
-- **Room for the window buttons**: on the left on Mac, top right on Windows.
+- **Room for the macOS window buttons**: the red, yellow and green buttons sit inside the left box.
 - **Settings panel** (paintbrush icon, top right), with every change applied instantly:
-  - **Window buttons**: Mac / Windows
   - **Corners**: Rounded / Sharp (sharp squares off *everything*, buttons and tags included)
   - **Colour scheme**: switch between the schemes below without leaving Spotify
   - **Colours**: accent (play buttons and highlighted items), background, box background and outline
@@ -24,7 +23,7 @@ Install **Subtle Outline** from the Themes tab in [Spicetify Marketplace](https:
 
 ### Manual install
 
-1. Copy `user.css` and `color.ini` into `~/.config/spicetify/Themes/Subtle Outline/` (on Windows: `%appdata%\spicetify\Themes\Subtle Outline\`).
+1. Copy `user.css` and `color.ini` into `~/.config/spicetify/Themes/Subtle Outline/`.
 2. Copy `subtle-outline.js` into `~/.config/spicetify/Extensions/`.
 3. Run:
    ```
@@ -35,7 +34,7 @@ Install **Subtle Outline** from the Themes tab in [Spicetify Marketplace](https:
 
 ## Notes
 
-- Made and tested on **macOS**. The Windows window-button spacing is untested; please open an issue if it doesn't line up.
+- Made for **macOS** only.
 - Spotify updates sometimes rename the parts of the app this theme styles. If something breaks after an update, please open an issue.
 - After a Spotify update wipes Spicetify, run `spicetify backup apply`. Your settings are kept.
 
