@@ -18,14 +18,49 @@
   const STORAGE_KEY = "subtleOutline:settings";
   const LIKED_HEADER = "#3b3b41"; // grey for the Liked Songs page header
 
-  // Colour settings: each overrides one of the colour scheme's variables
-  // (Spicetify routes Spotify's colours through these). Unset = use the
-  // colour scheme chosen in Marketplace.
+  // Spicetify's built-in colours, used for anything a scheme doesn't set
+  const SPICE_DEFAULTS = {
+    "text": "#ffffff", "subtext": "#b3b3b3", "main": "#121212", "main-elevated": "#242424",
+    "highlight": "#1a1a1a", "highlight-elevated": "#2a2a2a", "sidebar": "#000000",
+    "player": "#181818", "card": "#282828", "shadow": "#000000", "selected-row": "#ffffff",
+    "button": "#1db954", "button-active": "#1ed760", "button-disabled": "#535353",
+    "tab-active": "#333333", "notification": "#4687d6", "notification-error": "#e22134",
+    "misc": "#7f7f7f",
+  };
+  // The colour schemes from color.ini (keep the two in sync), so they can be
+  // switched from the settings panel as well as from Marketplace.
+  const CATPPUCCIN_FRAPPE = {
+    "text": "#c6d0f5", "subtext": "#b5bfe2", "main": "#303446", "sidebar": "#292c3c",
+    "player": "#303446", "card": "#303446", "shadow": "#292c3c", "selected-row": "#949cbb",
+    "button": "#838ba7", "button-active": "#949cbb", "button-disabled": "#737994",
+    "tab-active": "#414559", "notification": "#414559", "notification-error": "#e78284",
+    "misc": "#51576d",
+  };
+  const SCHEMES = {
+    "Subtle": { "misc": "#2a2930", "main": "#0f0f11", "sidebar": "#18171b" },
+    "Original": { "misc": "#3b3b41", "main": "#101012", "sidebar": "#1c1a1e" },
+    "Natural": {},
+    "Droid": { "button-active": "#b46450", "button": "#b46450", "misc": "#b46450", "main": "#101012", "sidebar": "#1c1a1e" },
+    "Catppuccin Frappé": CATPPUCCIN_FRAPPE,
+    "Catppuccin Frappé Maroon": { ...CATPPUCCIN_FRAPPE, "button-active": "#c6d0f5", "notification-error": "#ea999c", "misc": "#ea999c" },
+  };
+
+  // Colour settings: each overrides one or more of the scheme's colours
+  // (Spicetify routes Spotify's colours through --spice-* variables).
+  // Unset = use the colour scheme.
   const COLOURS = [
-    ["backgroundColor", "--spice-sidebar", "Background", "Behind and between the boxes"],
-    ["boxColor", "--spice-main", "Box background", "Inside the boxes and panels"],
-    ["outlineColor", "--spice-misc", "Outline", "Outline colour for every box and panel"],
+    ["accentColor", ["button-active", "button"], "Accent", "Play buttons and highlighted items, like the playlist that's playing"],
+    ["backgroundColor", ["sidebar"], "Background", "Behind and between the boxes"],
+    ["boxColor", ["main"], "Box background", "Inside the boxes and panels"],
+    ["outlineColor", ["misc"], "Outline", "Outline colour for every box and panel"],
   ];
+  const isHex = (v) => /^#[0-9a-f]{6}$/i.test(v || "");
+  const toRgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  // blend a colour towards white (amount > 0) or black (amount < 0)
+  function shade(hex, amount) {
+    const target = amount > 0 ? 255 : 0, a = Math.abs(amount);
+    return "#" + toRgb(hex).map((c) => Math.round(c + (target - c) * a).toString(16).padStart(2, "0")).join("");
+  }
 
   const TOGGLES = [
     ["boxes", "Boxed top bar", "Outline and background around the three top bar boxes"],
@@ -67,18 +102,31 @@
     root.classList.toggle("sbo-sharp", settings.corners === "sharp");
     for (const [key] of TOGGLES) root.classList.toggle("sbo-" + key, !!settings[key]);
     root.style.setProperty("--sbo-outline-width", settings.outlineWidth + "px");
-    for (const [key, cssVar] of COLOURS) {
-      const value = /^#[0-9a-f]{6}$/i.test(settings[key] || "") ? settings[key].toLowerCase() : null;
-      const rgbVar = cssVar.replace("--spice-", "--spice-rgb-");
-      if (!value) {
-        root.style.removeProperty(cssVar);
-        root.style.removeProperty(rgbVar);
-      } else {
-        root.style.setProperty(cssVar, value);
+    // Colours: the scheme picked in the panel (if any), then single overrides.
+    // Anything left unset falls back to the scheme picked in Marketplace.
+    const colours = {};
+    const scheme = SCHEMES[settings.scheme];
+    if (scheme) for (const name in SPICE_DEFAULTS) colours[name] = scheme[name] || SPICE_DEFAULTS[name];
+    for (const [key, names] of COLOURS) {
+      if (isHex(settings[key])) for (const name of names) colours[name] = settings[key].toLowerCase();
+    }
+    for (const name in SPICE_DEFAULTS) {
+      if (colours[name]) {
+        root.style.setProperty(`--spice-${name}`, colours[name]);
         // some of Spotify's colours use the r,g,b form, e.g. rgba(var(--spice-rgb-main), .5)
-        const n = parseInt(value.slice(1), 16);
-        root.style.setProperty(rgbVar, `${n >> 16 & 255},${n >> 8 & 255},${n & 255}`);
+        root.style.setProperty(`--spice-rgb-${name}`, toRgb(colours[name]).join(","));
+      } else {
+        root.style.removeProperty(`--spice-${name}`);
+        root.style.removeProperty(`--spice-rgb-${name}`);
       }
+    }
+    // Spotify hard-codes green hover/pressed shades for accent buttons (like
+    // the big play button); derive them from the accent instead
+    const accent = colours["button-active"];
+    root.classList.toggle("sbo-accent", !!accent);
+    if (accent) {
+      root.style.setProperty("--sbo-accent-hover", shade(accent, 0.15));
+      root.style.setProperty("--sbo-accent-press", shade(accent, -0.12));
     }
   }
 
@@ -259,6 +307,16 @@
     /* Hide it when Spotify's top bar isn't there (e.g. full-screen views) */
     html:not(:has(.main-globalNav-contentRight)) .sbo-settings-btn {
       display: none;
+    }
+
+    /* =================== Accent colour =================== */
+    html.sbo-accent .encore-bright-accent-set,
+    html.sbo-accent .encore-positive-set {
+      --background-highlight: var(--sbo-accent-hover) !important;
+      --background-press: var(--sbo-accent-press) !important;
+      --background-elevated-base: var(--sbo-accent-hover) !important;
+      --background-elevated-highlight: var(--sbo-accent-hover) !important;
+      --background-elevated-press: var(--sbo-accent-press) !important;
     }
 
     /* =================== Box outline setting =================== */
@@ -482,6 +540,15 @@
       background: none;
       cursor: pointer;
     }
+    .sbo-control select {
+      background: var(--spice-main);
+      color: var(--text-base, #fff);
+      border: 1px solid var(--spice-misc);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font: inherit;
+      cursor: pointer;
+    }
     .sbo-control input[type="range"] {
       width: 140px;
       accent-color: var(--text-base, #fff);
@@ -563,9 +630,26 @@
 
     // Colours
     const colours = el("div", { className: "sbo-section" }, el("h3", { textContent: "Colours" }));
-    for (const [key, cssVar, title, hint] of COLOURS) {
+    const schemeSelect = el("select");
+    schemeSelect.setAttribute("aria-label", "Colour scheme");
+    for (const name of ["", ...Object.keys(SCHEMES)]) {
+      schemeSelect.append(el("option", { value: name, textContent: name || "Marketplace's choice" }));
+    }
+    schemeSelect.value = SCHEMES[settings.scheme] ? settings.scheme : "";
+    schemeSelect.addEventListener("change", () => {
+      // a new scheme replaces any single colour overrides, so it shows as designed
+      settings.scheme = schemeSelect.value || undefined;
+      for (const [key] of COLOURS) delete settings[key];
+      save();
+      applySettings();
+      setTimeout(() => panel.replaceWith(buildPanel()), 0); // show the scheme's colours in the pickers
+    });
+    colours.append(el("div", { className: "sbo-row" },
+      labelBlock("Colour scheme", "Switch schemes here or in Marketplace; the colours below fine-tune it"),
+      el("div", { className: "sbo-control" }, schemeSelect)));
+    for (const [key, names, title, hint] of COLOURS) {
       const current = settings[key] ||
-        getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+        getComputedStyle(document.documentElement).getPropertyValue(`--spice-${names[0]}`).trim();
       const picker = el("input", { type: "color", value: /^#[0-9a-f]{6}$/i.test(current) ? current : "#000000" });
       picker.setAttribute("aria-label", title);
       picker.addEventListener("input", () => update(key, picker.value));
