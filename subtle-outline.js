@@ -29,20 +29,15 @@
   };
   // The colour schemes from color.ini (keep the two in sync), so they can be
   // switched from the settings panel as well as from Marketplace.
-  const CATPPUCCIN_FRAPPE = {
-    "text": "#c6d0f5", "subtext": "#b5bfe2", "main": "#303446", "sidebar": "#292c3c",
-    "player": "#303446", "card": "#303446", "shadow": "#292c3c", "selected-row": "#949cbb",
-    "button": "#838ba7", "button-active": "#949cbb", "button-disabled": "#737994",
-    "tab-active": "#414559", "notification": "#414559", "notification-error": "#e78284",
-    "misc": "#51576d",
-  };
   const SCHEMES = {
     "Subtle": { "misc": "#2a2930", "main": "#0f0f11", "sidebar": "#18171b" },
-    "Original": { "misc": "#3b3b41", "main": "#101012", "sidebar": "#1c1a1e" },
     "Natural": {},
     "Droid": { "button-active": "#b46450", "button": "#b46450", "misc": "#b46450", "main": "#101012", "sidebar": "#1c1a1e" },
-    "Catppuccin Frappé": CATPPUCCIN_FRAPPE,
-    "Catppuccin Frappé Maroon": { ...CATPPUCCIN_FRAPPE, "button-active": "#c6d0f5", "notification-error": "#ea999c", "misc": "#ea999c" },
+    "Midnight": { "main": "#0a0d13", "sidebar": "#0e1219", "misc": "#1e2633", "main-elevated": "#151b26", "highlight": "#141a24", "highlight-elevated": "#1c2431", "card": "#151b26", "tab-active": "#1e2633", "subtext": "#9aa4b5", "button": "#5b8def", "button-active": "#6f9cf5" },
+    "Forest": { "main": "#0b100d", "sidebar": "#101612", "misc": "#1f2a23", "main-elevated": "#151d18", "highlight": "#141b16", "highlight-elevated": "#1c261f", "card": "#151d18", "tab-active": "#1f2a23", "subtext": "#a3b1a7", "button": "#7fb88a", "button-active": "#8fc79a" },
+    "Ember": { "main": "#100b0c", "sidebar": "#171011", "misc": "#2e1c1e", "main-elevated": "#1d1415", "highlight": "#1b1314", "highlight-elevated": "#251a1b", "card": "#1d1415", "tab-active": "#2e1c1e", "subtext": "#b7a3a4", "button": "#e0625c", "button-active": "#e8736d" },
+    "Amethyst": { "main": "#0d0b11", "sidebar": "#141119", "misc": "#2a2335", "main-elevated": "#1a1622", "highlight": "#18141f", "highlight-elevated": "#211b2b", "card": "#1a1622", "tab-active": "#2a2335", "subtext": "#ada5b9", "button": "#a58cf0", "button-active": "#b39cf5" },
+    "Mono": { "main": "#0a0a0a", "sidebar": "#121212", "misc": "#262626", "main-elevated": "#1a1a1a", "highlight": "#161616", "highlight-elevated": "#1f1f1f", "card": "#1a1a1a", "tab-active": "#262626", "subtext": "#a6a6a6", "button": "#d9d9d9", "button-active": "#ededed" },
   };
 
   // Colour settings: each overrides one or more of the scheme's colours
@@ -55,6 +50,14 @@
     ["outlineColor", ["misc"], "Outline", "Outline colour for every box and panel"],
   ];
   const isHex = (v) => /^#[0-9a-f]{6}$/i.test(v || "");
+  // is a colour scheme active from Marketplace or Spicetify's config?
+  function hasOutsideScheme() {
+    if (document.querySelector("style.marketplaceScheme")) return true;
+    // manual install: Spicetify bakes the configured scheme into its own CSS.
+    // (With Marketplace, a scheme name without its style means the scheme
+    // wasn't found, e.g. one that was removed from color.ini.)
+    return !document.querySelector("style.marketplaceUserCSS") && !!window.Spicetify?.Config?.color_scheme;
+  }
   const toRgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
   // blend a colour towards white (amount > 0) or black (amount < 0)
   function shade(hex, amount) {
@@ -103,9 +106,11 @@
     for (const [key] of TOGGLES) root.classList.toggle("sbo-" + key, !!settings[key]);
     root.style.setProperty("--sbo-outline-width", settings.outlineWidth + "px");
     // Colours: the scheme picked in the panel (if any), then single overrides.
-    // Anything left unset falls back to the scheme picked in Marketplace.
+    // Anything left unset falls back to the scheme picked in Marketplace, or
+    // to Subtle when no scheme is active at all (Marketplace sometimes saves
+    // an installed theme without one, which leaves Spotify's plain colours).
     const colours = {};
-    const scheme = SCHEMES[settings.scheme];
+    const scheme = SCHEMES[settings.scheme] || (hasOutsideScheme() ? null : SCHEMES.Subtle);
     if (scheme) for (const name in SPICE_DEFAULTS) colours[name] = scheme[name] || SPICE_DEFAULTS[name];
     for (const [key, names] of COLOURS) {
       if (isHex(settings[key])) for (const name of names) colours[name] = settings[key].toLowerCase();
@@ -577,6 +582,14 @@
   document.head.appendChild(style);
   applySettings();
 
+  // Marketplace (re)injects its scheme when one is picked there; re-check so
+  // the Subtle fallback steps aside for it
+  new MutationObserver((mutations) => {
+    if (mutations.some((m) => [...m.addedNodes, ...m.removedNodes].some((n) => n.classList?.contains("marketplaceScheme")))) {
+      applySettings();
+    }
+  }).observe(document.body, { childList: true });
+
   // Spotify's zoom (Cmd +/-) scales the page but not the window buttons;
   // outerWidth / innerWidth is the current zoom factor.
   function updateZoom() {
@@ -645,7 +658,7 @@
       setTimeout(() => panel.replaceWith(buildPanel()), 0); // show the scheme's colours in the pickers
     });
     colours.append(el("div", { className: "sbo-row" },
-      labelBlock("Colour scheme", "Switch schemes here or in Marketplace; the colours below fine-tune it"),
+      labelBlock("Colour scheme", "Switch schemes here or in Marketplace (Subtle if none is set); the colours below fine-tune it"),
       el("div", { className: "sbo-control" }, schemeSelect)));
     for (const [key, names, title, hint] of COLOURS) {
       const current = settings[key] ||
